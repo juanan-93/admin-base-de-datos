@@ -1,14 +1,50 @@
 <?php
-$servername = "localhost";
-$database = "datos";
-$username = "juan";
-$password = "12345";
-// Create connection
-$conn = mysqli_connect($servername, $username, $password, $database);
-// Check connection
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+
+namespace core;
+
+use PDO;
+
+class Connection{
+
+    protected $pdo;
+    protected $driver;
+    protected $host;
+    protected $database;
+    protected $user;
+    protected $password;
+   
+    public function __construct(){
+
+        $configuration = require 'configdatabase.php';
+       
+        $this->driver = $configuration['driver'];
+        $this->host = $configuration['host'];
+        $this->database = $configuration['database'];
+        $this->user = $configuration['user'];
+        $this->password = $configuration['password'];
+       
+        try {
+
+            $this->pdo = new PDO($this->driver .':host='.$this->host.';dbname='.$this->database, $this->user, $this->password,
+                array(
+                    PDO::MYSQL_ATTR_LOCAL_INFILE => TRUE,
+                    PDO::MYSQL_ATTR_INIT_COMMAND => "SET lc_time_names='es_ES'"
+                )
+            );
+
+            $this->pdo->exec("SET CHARACTER SET utf8");
+
+        } catch (PDOException $e) {
+
+            echo "Error al conectar a la base de datos!: " . $e->getMessage() . "<br/>";
+            die();
+        }
+    }
+
+    public function  __destruct() {
+       
+        $this->pdo = NULL;
+    }
 }
-echo "Connected successfully";
-mysqli_close($conn);
+
 ?>
